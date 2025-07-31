@@ -1,14 +1,8 @@
 # daily_summary_viewer.py
-import os
 import pandas as pd
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QComboBox, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, QHeaderView
 from PyQt6.QtCore import Qt
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-import matplotlib
-from matplotlib import rcParams
-from matplotlib.font_manager import FontProperties
-from matplotlib import font_manager
 
 
 class DailySummaryViewer(QDialog):
@@ -158,7 +152,7 @@ class DailySummaryViewer(QDialog):
         with PdfPages(file_path) as pdf:
             # ✅ 첫 번째 페이지: 표 출력 (도표 제외)
             fig, ax = plt.subplots(figsize=(8.27, 11.69))
-            fig.suptitle(f"{self.date_selector.currentText()} 일일민원보고", fontproperties=font_prop, fontsize=28, y=0.98)
+            fig.suptitle(f"{self.date_selector.currentText()} 일일민원보고", fontproperties=font_prop, fontsize=16, y=0.98)
             fig.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)  # ✅ A4 여백 설정 (5%)
             ax.axis('off')
 

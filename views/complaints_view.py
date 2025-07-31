@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, QInputDialog, QHBoxLayout
-from PyQt6.QtWidgets import QLineEdit
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, QHBoxLayout
+from PyQt6.QtWidgets import QLineEdit, QApplication
 from PyQt6.QtCore import Qt, pyqtSignal
 import pandas as pd
 import os
+from dialogs.sheet_select_dialog import SheetSelectDialog
 
 class ComplaintsView(QWidget):
     data_loaded = pyqtSignal(pd.DataFrame)
@@ -42,14 +43,19 @@ class ComplaintsView(QWidget):
 
     def load_excel(self):
         try:
-            file, _ = QFileDialog.getOpenFileName(self, "엑셀 파일 선택", self.last_dir, "Excel Files (*.xlsx)")
+            dialog = QFileDialog(self)
+            dialog.setOption(QFileDialog.Option.DontUseNativeDialog, True)
+            file, _ = dialog.getOpenFileName(self, "엑셀 파일 선택", self.last_dir, "Excel Files (*.xlsx)")
             if file:
                 self.last_dir = os.path.dirname(file)
                 excel_file = pd.ExcelFile(file)
                 sheet_names = excel_file.sheet_names
+
                 # 시트 선택 다이얼로그
-                sheet, ok = QInputDialog.getItem(self, "시트 선택", "시트를 선택하세요:", sheet_names, 0, False)
-                if ok and sheet:
+                QApplication.setStyle("Fusion")
+                dialog = SheetSelectDialog(sheet_names, is_dark_mode=False, parent=self)
+                if dialog.exec():
+                    sheet = dialog.get_selected_sheet()
                     df = pd.read_excel(file, sheet_name=sheet, dtype=str).fillna("")
                     # ✅ 컬럼명 공백 및 줄바꿈 제거
                     df.columns = df.columns.str.strip().str.replace("\n", "").str.replace("\r", "")
@@ -110,7 +116,9 @@ class ComplaintsView(QWidget):
 
             df = pd.DataFrame(data, columns=headers)
 
-            file, _ = QFileDialog.getSaveFileName(self, "엑셀로 저장", self.last_dir, "Excel Files (*.xlsx)")
+            dialog = QFileDialog(self)
+            dialog.setOption(QFileDialog.Option.DontUseNativeDialog, True)
+            file, _ = dialog.getSaveFileName(self, "엑셀로 저장", self.last_dir, "Excel Files (*.xlsx)")
             if file:
                 self.last_dir = os.path.dirname(file)
                 df.to_excel(file, index=False)
