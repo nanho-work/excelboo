@@ -127,6 +127,8 @@ class MonthlySummaryViewer(QDialog):
         from PyQt6.QtGui import QFontMetrics
 
         file_path, _ = QFileDialog.getSaveFileName(self, "PDF로 저장", "", "PDF Files (*.pdf)")
+        if file_path and not file_path.lower().endswith('.pdf'):
+            file_path += '.pdf'
         if not file_path:
             return
 
