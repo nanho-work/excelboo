@@ -54,11 +54,12 @@ class ComplaintsView(QWidget):
                     # ✅ 컬럼명 공백 및 줄바꿈 제거
                     df.columns = df.columns.str.strip().str.replace("\n", "").str.replace("\r", "")
 
-                    # ✅ 날짜 컬럼을 datetime으로 변환
+                    # ✅ 날짜 컬럼을 datetime으로 변환하고 NaT는 공백 처리
                     date_cols = ["접수일", "처리기한", "처리완료일", "취소일자", "입금일자"]
                     for col in date_cols:
                         if col in df.columns:
                             df[col] = pd.to_datetime(df[col], errors="coerce").dt.date
+                            df[col] = df[col].fillna("")
 
                     # ✅ 금액 컬럼을 float으로 변환
                     money_cols = ["승인금액", "입금금액"]

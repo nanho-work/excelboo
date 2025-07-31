@@ -11,14 +11,11 @@ class DailyStatusView(QWidget):
         self.layout = QVBoxLayout()
         self.label = QLabel("일 단위 현황 데이터 없음")
         self.table = QTableWidget()
-        self.load_button = QPushButton("일 단위 현황 생성")
-        self.load_button.clicked.connect(self.generate_report)
-        self.summary_button = QPushButton("📊 출력")
+        self.summary_button = QPushButton("PDF 파일 생성")
         self.summary_button.clicked.connect(self.show_summary_viewer)
         self.full_df = None  # To hold externally provided DataFrame
 
         self.layout.addWidget(self.label)
-        self.layout.addWidget(self.load_button)
         self.layout.addWidget(self.summary_button)
         self.layout.addWidget(self.table)
         self.setLayout(self.layout)
@@ -50,6 +47,8 @@ class DailyStatusView(QWidget):
             grouped["처리율"] = ((grouped["기한내처리건수"] / grouped["민원건수"]) * 100).round(1).astype(str) + "%"
             total_by_date = grouped.groupby("접수일")["민원건수"].transform("sum")
             grouped["날짜별민원비중"] = ((grouped["민원건수"] / total_by_date) * 100).round(1).astype(str) + "%"
+            column_order = ["접수일", "가맹점명", "TID명", "날짜별민원비중", "민원건수", "기한내처리건수", "처리율"]
+            grouped = grouped[column_order]
             self.display_table(grouped)
             self.label.setText("일 단위 현황 생성 완료")
             self.debug_column_types()

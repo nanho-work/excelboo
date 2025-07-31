@@ -1,7 +1,7 @@
 # daily_summary_viewer.py
 import os
 import pandas as pd
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QComboBox, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QComboBox, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, QHeaderView
 from PyQt6.QtCore import Qt
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -32,7 +32,7 @@ class DailySummaryViewer(QDialog):
         self.layout.addWidget(self.date_selector)
         self.layout.addWidget(self.table)
 
-        self.print_button = QPushButton("프린터 출력")
+        self.print_button = QPushButton("PDF로 저장")
         self.print_button.clicked.connect(self.handle_print)
         self.layout.addWidget(self.print_button)
 
@@ -65,17 +65,22 @@ class DailySummaryViewer(QDialog):
             .reset_index()
         )
 
-        # ✅ 처리율 및 비중 계산
-        grouped["처리율"] = ((grouped["기한내처리건수"] / grouped["민원건수"]) * 100).round(1).astype(str) + "%"
+        # ✅ 처리율 및 비중 계산 및 컬럼 순서 재배치
         total_complaints_day = grouped["민원건수"].sum()
         grouped["민원비중(%)"] = grouped["민원건수"].apply(
             lambda x: f"{(x / total_complaints_day * 100):.1f}%" if total_complaints_day else "0.0%"
         )
+        grouped = grouped[["가맹점명", "TID명", "민원건수", "민원비중(%)", "기한내처리건수"]]
+        grouped["처리율"] = ((grouped["기한내처리건수"] / grouped["민원건수"]) * 100).round(1).astype(str) + "%"
+        grouped = grouped[["가맹점명", "TID명", "민원건수", "민원비중(%)", "기한내처리건수", "처리율"]]
 
         # 테이블에 데이터 표시
         self.table.setRowCount(len(grouped))
         self.table.setColumnCount(len(grouped.columns))
         self.table.setHorizontalHeaderLabels(grouped.columns)
+
+        self.table.horizontalHeader().setStretchLastSection(False)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
 
         prev_store = None
         for i, row in grouped.iterrows():
@@ -149,9 +154,7 @@ class DailySummaryViewer(QDialog):
         from matplotlib.table import Table
 
         def wrap_text(text, max_length=15):
-            if len(text) <= max_length:
-                return text
-            return "\n".join([text[i:i+max_length] for i in range(0, len(text), max_length)])
+            return text  # 줄바꿈 제거
 
         file_path, _ = QFileDialog.getSaveFileName(self, "PDF로 저장", "", "PDF Files (*.pdf)")
         if not file_path:
