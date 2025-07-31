@@ -112,15 +112,10 @@ class DailySummaryViewer(QDialog):
         total_rate = f"{(total_processed / total_complaints * 100):.1f}%" if total_complaints else "0.0%"
 
         self.table.setItem(total_rows, 2, QTableWidgetItem(str(total_complaints)))
-        self.table.setItem(total_rows, 3, QTableWidgetItem(str(total_processed)))
-        self.table.setItem(total_rows, 4, QTableWidgetItem(total_rate))
-        self.table.setItem(total_rows, 5, QTableWidgetItem("100.0%"))
-        item = self.table.item(total_rows, 5)
-        if item:
-            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
-
-        for col in [2, 3, 4]:
+        self.table.setItem(total_rows, 3, QTableWidgetItem("100.0%"))
+        self.table.setItem(total_rows, 4, QTableWidgetItem(str(total_processed)))
+        self.table.setItem(total_rows, 5, QTableWidgetItem(total_rate))
+        for col in [2, 3, 4, 5]:
             item = self.table.item(total_rows, col)
             if item:
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
