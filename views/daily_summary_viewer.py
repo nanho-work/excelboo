@@ -10,14 +10,6 @@ from matplotlib import rcParams
 from matplotlib.font_manager import FontProperties
 from matplotlib import font_manager
 
-font_path = os.path.abspath("fonts/NanumGothic.ttf")
-font_manager.fontManager.addfont(font_path)
-font_prop = FontProperties(fname=font_path)
-nanum_font = font_prop.get_name()
-matplotlib.rcParams['font.family'] = nanum_font
-matplotlib.rcParams['axes.unicode_minus'] = False
-matplotlib.rcParams['pdf.fonttype'] = 42  # Ensure TrueType fonts are embedded in PDFs
-
 
 class DailySummaryViewer(QDialog):
     def __init__(self, full_df, parent=None):
@@ -36,14 +28,9 @@ class DailySummaryViewer(QDialog):
         self.label = QLabel("날짜를 선택하세요")
         self.table = QTableWidget()
 
-        # matplotlib 그래프 영역 설정
-        self.figure, self.ax = plt.subplots(figsize=(5, 3))
-        self.canvas = FigureCanvas(self.figure)
-
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.date_selector)
         self.layout.addWidget(self.table)
-        self.layout.addWidget(self.canvas)
 
         self.print_button = QPushButton("프린터 출력")
         self.print_button.clicked.connect(self.handle_print)
@@ -148,17 +135,16 @@ class DailySummaryViewer(QDialog):
         for row in range(self.table.rowCount()):
             self.table.setRowHeight(row, row_height)
 
-        # 바 차트 표시
-        self.ax.clear()
-        self.ax.bar(grouped["TID명"], grouped["민원건수"], label="민원건수")
-        self.ax.set_title(f"{selected_date} 민원 건수", fontproperties=font_prop)
-        self.ax.set_xlabel("TID명", fontproperties=font_prop)
-        self.ax.set_ylabel("건수", fontproperties=font_prop)
-        self.ax.tick_params(axis='x', rotation=45)
-        self.figure.tight_layout()
-        self.canvas.draw()
-
     def handle_print(self):
+        import sys
+        from matplotlib import font_manager
+
+        # OS에 따라 기본 한글 글꼴 설정
+        font_prop = font_manager.FontProperties(
+            family='Malgun Gothic' if sys.platform == 'win32' else 'AppleGothic',
+            size=14
+        )
+
         from matplotlib.backends.backend_pdf import PdfPages
         from matplotlib.table import Table
 
@@ -233,33 +219,3 @@ class DailySummaryViewer(QDialog):
            
             pdf.savefig(fig)
             plt.close(fig)
-
-            # ✅ 두 번째 페이지: 도넛 차트 출력 (좌측에 TID명 리스트, 우측에 도넛 차트)
-            fig2 = plt.figure(figsize=(8.27, 11.69))
-
-            selected_date = self.date_selector.currentText()
-            filtered = self.df[self.df["접수일"].astype(str) == selected_date]
-            grouped = filtered.groupby("TID명").size()
-
-            labels = grouped.index.tolist()
-            sizes = grouped.values
-
-            # 좌측 텍스트 박스 영역 (TID 리스트)
-            ax_text = fig2.add_axes([0.05, 0.1, 0.4, 0.8])  # left half
-            ax_text.axis('off')
-            text_str = "\n".join(labels)
-            ax_text.text(0, 1, text_str, va='top', ha='left', fontsize=14, fontproperties=font_prop)
-
-            # 우측 도넛 차트
-            ax_donut = fig2.add_axes([0.55, 0.3, 0.4, 0.4])  # right half
-            wedges, texts, autotexts = ax_donut.pie(
-                sizes,
-                labels=labels,
-                autopct='%1.1f%%',
-                textprops={'fontsize': 10, 'fontproperties': font_prop},
-                wedgeprops=dict(width=0.4)
-            )
-            ax_donut.set_title(f"{selected_date} 민원 비중", fontproperties=font_prop)
-
-            pdf.savefig(fig2)
-            plt.close(fig2)
