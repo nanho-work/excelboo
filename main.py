@@ -16,9 +16,11 @@ from views.unpaid_total_view import UnpaidTotalView
 from views.unpaid_by_store_view import UnpaidByStoreView
 #
 
-from styles.button_styles import modern_default_button_style, selected_button_style
+from styles.button_styles import modern_default_button_style, selected_button_style, gradient_button_style
 from styles.theme_dark import dark_style
 from styles.theme_light import light_style
+
+from styles.scrollbar_styles import modern_scrollbar_style
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -81,11 +83,12 @@ class MainWindow(QMainWindow):
         self.complaints_view = ComplaintsView()
         self.complaints_view.data_loaded.connect(self.receive_full_data)
         self.daily_view = DailyStatusView()
+        self.monthly_view = MonthlyStatusView()
 
         self.stack = QStackedWidget()
         self.stack.addWidget(self.complaints_view)  # 전체민원 첫 페이지로
         self.stack.addWidget(self.daily_view)
-        self.stack.addWidget(MonthlyStatusView())
+        self.stack.addWidget(self.monthly_view)
         self.stack.addWidget(UnpaidTotalView())
         self.stack.addWidget(UnpaidByStoreView())
 
@@ -108,6 +111,7 @@ class MainWindow(QMainWindow):
     def receive_full_data(self, df):
         self.full_df = df
         self.daily_view.set_full_data(df)
+        self.monthly_view.set_full_data(df)
 
     def apply_theme(self, mode):
         if mode == "dark":
@@ -121,6 +125,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication([])
+    app.setStyleSheet(modern_scrollbar_style)
     window = MainWindow()
     window.show()
     app.exec()

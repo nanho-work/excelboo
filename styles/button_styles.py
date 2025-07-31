@@ -59,3 +59,30 @@ selected_button_style = """
         background-color: #0F3E6D;
     }
 """
+
+gradient_button_style = """
+    QPushButton {
+        background: qlineargradient(
+            spread:pad,
+            x1:1, y1:0,
+            x2:0, y2:0,
+            stop:0 #ffffff,
+            stop:1 #bfdbfe
+        );
+        color: #1e3a8a;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        border: 1px solid #93c5fd;
+    }
+    QPushButton:hover {
+        background: qlineargradient(
+            spread:pad,
+            x1:1, y1:0,
+            x2:0, y2:0,
+            stop:0 #e0f2fe,
+            stop:1 #bfdbfe
+        );
+    }
+"""
