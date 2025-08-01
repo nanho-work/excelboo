@@ -1,8 +1,7 @@
 import pandas as pd
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, QHeaderView
-from PyQt6.QtCore import Qt, QMarginsF
-from PyQt6.QtGui import QPainter, QPageLayout, QPageSize
-import matplotlib.pyplot as plt
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter
 
 
 class MonthlySummaryViewer(QDialog):
@@ -43,6 +42,10 @@ class MonthlySummaryViewer(QDialog):
         self.layout.addWidget(self.print_button)
 
         self.setLayout(self.layout)
+
+        from styles.theme_dark import dark_style
+        from styles.theme_light import light_style
+        self.setStyleSheet(dark_style)  # or light_style, depending on app logic
 
         self.generate_summary()
 
@@ -94,9 +97,10 @@ class MonthlySummaryViewer(QDialog):
         for i, row in result_df.iterrows():
             for j, val in enumerate(row):
                 item = QTableWidgetItem(str(val))
-                item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
-                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.table.setItem(i, j, item)
+                if item:
+                    item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                    self.table.setItem(i, j, item)
 
         font = self.table.font()
         font.setPointSize(13)
@@ -127,10 +131,10 @@ class MonthlySummaryViewer(QDialog):
         from PyQt6.QtGui import QFontMetrics
 
         file_path, _ = QFileDialog.getSaveFileName(self, "PDF로 저장", "", "PDF Files (*.pdf)")
-        if file_path and not file_path.lower().endswith('.pdf'):
-            file_path += '.pdf'
         if not file_path:
             return
+        if not file_path.lower().endswith('.pdf'):
+            file_path += '.pdf'
 
         curr_month_str = getattr(self, 'curr_month_str', '선택된 월')
 
@@ -156,7 +160,8 @@ class MonthlySummaryViewer(QDialog):
             metrics = QFontMetrics(font)
             col_widths = []
             for col in range(cols):
-                header_text = self.table.horizontalHeaderItem(col).text()
+                header_item = self.table.horizontalHeaderItem(col)
+                header_text = header_item.text() if header_item else ""
                 max_width = metrics.horizontalAdvance(header_text)
                 for row in range(rows):
                     cell_text = self.table.item(row, col).text()
@@ -199,7 +204,8 @@ class MonthlySummaryViewer(QDialog):
         x = page_rect.left()
         for col in range(cols):
             width = col_widths[col]
-            header_text = self.table.horizontalHeaderItem(col).text()
+            header_item = self.table.horizontalHeaderItem(col)
+            header_text = header_item.text() if header_item else ""
             # line_count = header_text.count('\n') + 1  # removed
             height = header_height
             rect = QRectF(x, y, width, height)

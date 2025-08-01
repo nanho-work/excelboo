@@ -175,8 +175,10 @@ class MonthlyStatusView(QWidget):
 
         self.table.resizeColumnsToContents()
     def show_summary_viewer(self):
-        if self.full_df is not None:
-            # TODO: Replace 'MonthlySummaryViewer' with actual viewer dialog class
-            from .monthly_summary_viewer import MonthlySummaryViewer
-            dlg = MonthlySummaryViewer(self.full_df, self)
-            dlg.exec()
+        try:
+            if self.full_df is not None:
+                from .monthly_summary_viewer import MonthlySummaryViewer
+                dlg = MonthlySummaryViewer(self.full_df, self)
+                dlg.exec()
+        except Exception as e:
+            print(f"❌ MonthlySummaryViewer 실행 오류: {e}")
