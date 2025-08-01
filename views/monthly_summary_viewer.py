@@ -142,12 +142,20 @@ class MonthlySummaryViewer(QDialog):
     def handle_print(self):
         try:
             file_path, _ = QFileDialog.getSaveFileName(self, "PDF로 저장", "", "PDF Files (*.pdf)")
+            file_path = str(file_path)
             if not file_path:
                 return
             if not file_path.lower().endswith('.pdf'):
                 file_path += '.pdf'
 
             title = f"월 단위 현황 ({getattr(self, 'curr_month_str', '선택된 월')})"
-            export_table_to_pdf(self.table, file_path, title, orientation="landscape", font_size=12)
+
+            try:
+                export_table_to_pdf(self.table, file_path, title, orientation="landscape", font_size=12)
+            except Exception as export_error:
+                print(f"[DEBUG] PDF Export Error: {export_error}")
+                raise
+
         except Exception as e:
+            print(f"[DEBUG] PDF Save Error: {e}")
             QMessageBox.critical(self, "오류", f"PDF 저장 중 오류 발생:\n{str(e)}")
