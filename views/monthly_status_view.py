@@ -1,13 +1,8 @@
 # 월 단위 현황
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QTableWidget, QTableWidgetItem
-from PyQt6.QtWidgets import QPushButton, QFileDialog
-from PyQt6.QtPrintSupport import QPrinter, QPrintDialog
-from PyQt6.QtGui import QPainter
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QTableWidget, QTableWidgetItem, QPushButton
+from PyQt6.QtGui import QFont, QColor, QBrush
 from PyQt6.QtCore import Qt
 import pandas as pd
-
-from openpyxl import load_workbook
-from PyQt6.QtGui import QFont, QColor, QBrush
 
 class MonthlyStatusView(QWidget):
     def __init__(self):
@@ -116,8 +111,6 @@ class MonthlyStatusView(QWidget):
         self.table.setRowCount(len(df))
         self.table.setColumnCount(len(df.columns))
         self.table.setHorizontalHeaderLabels(df.columns)
-
-        from PyQt6.QtGui import QFont, QColor, QBrush
 
         # 헤더 스타일 적용
         header_font = QFont()

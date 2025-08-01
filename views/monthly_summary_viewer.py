@@ -1,22 +1,11 @@
 import pandas as pd
-
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem,
     QPushButton, QFileDialog, QHeaderView, QComboBox, QHBoxLayout,
     QMessageBox
 )
-from PyQt6.QtCore import Qt, QMarginsF, QRectF
-from PyQt6.QtGui import QPainter, QFontMetrics
-from PyQt6.QtPrintSupport import QPrinter
-from PyQt6.QtGui import QPageLayout, QPageSize
-
+from PyQt6.QtCore import Qt
 from utils.pdf_exporter import export_table_to_pdf
-
-from styles.theme_dark import dark_style
-from styles.theme_light import light_style
-
-from PyQt6.QtCore import QTimer
-
 
 class MonthlySummaryViewer(QDialog):
     def __init__(self, full_df, parent=None):
@@ -33,7 +22,7 @@ class MonthlySummaryViewer(QDialog):
         self.label = QLabel("월별 요약 정보")
         self.table = QTableWidget()
 
-        # --- Add month selector before generate_summary ---
+        # --- 월 선택 콤보박스 추가 (generate_summary 이전에 실행) ---
         self.month_selector_layout = QHBoxLayout()
         self.month_combo = QComboBox()
         self.available_months = sorted(self.df["월"].astype(str).unique())
@@ -44,7 +33,7 @@ class MonthlySummaryViewer(QDialog):
         self.month_selector_layout.addWidget(QLabel("기준 월 선택:"))
         self.month_selector_layout.addWidget(self.month_combo)
         self.layout.insertLayout(0, self.month_selector_layout)
-        # --- End month selector ---
+        # --- 월 선택 콤보박스 끝 ---
 
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.table)
@@ -55,9 +44,6 @@ class MonthlySummaryViewer(QDialog):
 
         self.setLayout(self.layout)
 
-        self.setStyleSheet(dark_style)  # or light_style, depending on app logic
-
-        # QTimer.singleShot(0, self.delayed_generate_summary)
 
 
     def showEvent(self, event):

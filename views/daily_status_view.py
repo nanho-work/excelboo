@@ -1,6 +1,6 @@
 # 일단위 현황
 import pandas as pd
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFileDialog, QTableWidget, QTableWidgetItem, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QLabel
 from PyQt6.QtCore import Qt
 from .daily_detail_dialog import DailyDetailDialog
 from .daily_summary_viewer import DailySummaryViewer

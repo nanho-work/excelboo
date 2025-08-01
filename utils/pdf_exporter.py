@@ -33,7 +33,7 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
 
             table_data = [headers] + rows
             row_count = len(table_data)
-            height_unit = font_size / 600  # constant row height per cell line
+            height_unit = font_size / 500  # constant row height per cell line
             row_heights = [height_unit * max(cell.count("\n") + 1 for cell in row) for row in table_data]
             unified_row_heights = [height_unit * max(cell.count("\n") + 1 for cell in row) for row in table_data]
             avg_cell_height = sum(row_heights) / row_count
@@ -58,6 +58,7 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
                         i, j, col_widths[j], cell_height, text=wrapped_cell, loc='center',
                         facecolor='#cccccc' if i == 0 else 'white'
                     )
+                    cell_obj.PAD = 0
                     cell_obj.get_text().set_fontproperties(font_prop)
                     cell_obj.get_text().set_fontsize(font_size)
                     cell_obj.set_height(cell_height)

@@ -2,7 +2,6 @@
 import pandas as pd
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QComboBox, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, QHeaderView
 from PyQt6.QtCore import Qt
-import matplotlib.pyplot as plt
 from utils.pdf_exporter import export_table_to_pdf
 
 
