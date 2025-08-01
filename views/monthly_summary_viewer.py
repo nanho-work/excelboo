@@ -58,7 +58,11 @@ class MonthlySummaryViewer(QDialog):
         self.setStyleSheet(dark_style)  # or light_style, depending on app logic
 
         
-        QTimer.singleShot(0, self.generate_summary)
+        QTimer.singleShot(0, self.delayed_generate_summary)
+
+    def delayed_generate_summary(self):
+        if self.isVisible():
+            self.generate_summary()
 
     def create_summary_table(self, curr_df, prev_df):
         df = pd.concat([prev_df, curr_df])

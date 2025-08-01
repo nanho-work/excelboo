@@ -20,7 +20,7 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
             fig, ax = plt.subplots(figsize=(11.69, 8.27))  # A4 landscape
         else:
             fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4 portrait
-        fig.suptitle(title, fontproperties=font_prop, fontsize=16, y=0.98)
+        fig.suptitle(title, fontproperties=font_prop, fontsize=14, y=0.98)
         fig.subplots_adjust(left=0.01, right=0.99, top=0.95, bottom=0.05)
         ax.axis('off')
 
