@@ -15,6 +15,8 @@ from utils.pdf_exporter import export_table_to_pdf
 from styles.theme_dark import dark_style
 from styles.theme_light import light_style
 
+from PyQt6.QtCore import QTimer
+
 
 class MonthlySummaryViewer(QDialog):
     def __init__(self, full_df, parent=None):
@@ -55,7 +57,8 @@ class MonthlySummaryViewer(QDialog):
 
         self.setStyleSheet(dark_style)  # or light_style, depending on app logic
 
-        self.generate_summary()
+        
+        QTimer.singleShot(0, self.generate_summary)
 
     def create_summary_table(self, curr_df, prev_df):
         df = pd.concat([prev_df, curr_df])
