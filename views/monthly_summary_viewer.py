@@ -1,7 +1,19 @@
 import pandas as pd
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, QHeaderView
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPainter
+
+from PyQt6.QtWidgets import (
+    QDialog, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem,
+    QPushButton, QFileDialog, QHeaderView, QComboBox, QHBoxLayout,
+    QMessageBox
+)
+from PyQt6.QtCore import Qt, QMarginsF, QRectF
+from PyQt6.QtGui import QPainter, QFontMetrics
+from PyQt6.QtPrintSupport import QPrinter
+from PyQt6.QtGui import QPageLayout, QPageSize
+
+from utils.pdf_exporter import export_table_to_pdf
+
+from styles.theme_dark import dark_style
+from styles.theme_light import light_style
 
 
 class MonthlySummaryViewer(QDialog):
@@ -20,8 +32,6 @@ class MonthlySummaryViewer(QDialog):
         self.table = QTableWidget()
 
         # --- Add month selector before generate_summary ---
-        from PyQt6.QtWidgets import QComboBox, QHBoxLayout
-
         self.month_selector_layout = QHBoxLayout()
         self.month_combo = QComboBox()
         self.available_months = sorted(self.df["월"].astype(str).unique())
@@ -43,8 +53,6 @@ class MonthlySummaryViewer(QDialog):
 
         self.setLayout(self.layout)
 
-        from styles.theme_dark import dark_style
-        from styles.theme_light import light_style
         self.setStyleSheet(dark_style)  # or light_style, depending on app logic
 
         self.generate_summary()
@@ -125,111 +133,14 @@ class MonthlySummaryViewer(QDialog):
         self.populate_table(result_df)
 
     def handle_print(self):
-        from PyQt6.QtPrintSupport import QPrinter
-        from PyQt6.QtGui import QPageLayout, QPageSize
-        from PyQt6.QtCore import QMarginsF, QRectF
-        from PyQt6.QtGui import QFontMetrics
+        try:
+            file_path, _ = QFileDialog.getSaveFileName(self, "PDF로 저장", "", "PDF Files (*.pdf)")
+            if not file_path:
+                return
+            if not file_path.lower().endswith('.pdf'):
+                file_path += '.pdf'
 
-        file_path, _ = QFileDialog.getSaveFileName(self, "PDF로 저장", "", "PDF Files (*.pdf)")
-        if not file_path:
-            return
-        if not file_path.lower().endswith('.pdf'):
-            file_path += '.pdf'
-
-        curr_month_str = getattr(self, 'curr_month_str', '선택된 월')
-
-        printer = QPrinter(QPrinter.PrinterMode.HighResolution)
-        printer.setOutputFormat(QPrinter.OutputFormat.PdfFormat)
-        printer.setOutputFileName(file_path)
-        layout = QPageLayout(QPageSize(QPageSize.PageSizeId.A4), QPageLayout.Orientation.Landscape, QMarginsF(10, 10, 10, 10))
-        printer.setPageLayout(layout)
-
-        painter = QPainter()
-        if not painter.begin(printer):
-            return
-
-        page_rect = layout.paintRectPixels(printer.resolution())
-        rows = self.table.rowCount()
-        cols = self.table.columnCount()
-
-        # Dynamically adjust font size to fit table within page width
-        font = painter.font()
-        for size in range(13, 5, -1):  # Try font sizes from 13 down to 6
-            font.setPointSize(size)
-            painter.setFont(font)
-            metrics = QFontMetrics(font)
-            col_widths = []
-            for col in range(cols):
-                header_item = self.table.horizontalHeaderItem(col)
-                header_text = header_item.text() if header_item else ""
-                max_width = metrics.horizontalAdvance(header_text)
-                for row in range(rows):
-                    cell_text = self.table.item(row, col).text()
-                    max_width = max(max_width, metrics.horizontalAdvance(cell_text))
-                col_widths.append(max_width + 10)
-            total_width = sum(col_widths)
-            if total_width <= page_rect.width():
-                break  # Font size fits
-
-        # Calculate height for each row
-        row_heights = []
-        for row in range(rows):
-            max_height = 0
-            for col in range(cols):
-                text = self.table.item(row, col).text()
-                max_height = max(max_height, metrics.height())
-            row_heights.append(max_height + 6)
-
-        # Calculate header height with padding
-        header_line_counts = [
-            self.table.horizontalHeaderItem(col).text().count('\n') + 1
-            for col in range(cols)
-        ]
-        header_heights = [
-            metrics.lineSpacing() * lines + 10
-            for lines in header_line_counts
-        ]
-        header_height = max(header_heights)
-
-        # Draw title
-        title = f"월 단위 현황 ({curr_month_str})"
-        title_font = font
-        title_font.setPointSize(font.pointSize() + 2)
-        painter.setFont(title_font)
-        title_rect = QRectF(page_rect.left(), page_rect.top(), page_rect.width(), metrics.height() + 20)
-        painter.drawText(title_rect, Qt.AlignmentFlag.AlignCenter, title)
-        y = title_rect.bottom() + 10  # Update y to be below title
-
-        # Draw header
-        x = page_rect.left()
-        for col in range(cols):
-            width = col_widths[col]
-            header_item = self.table.horizontalHeaderItem(col)
-            header_text = header_item.text() if header_item else ""
-            # line_count = header_text.count('\n') + 1  # removed
-            height = header_height
-            rect = QRectF(x, y, width, height)
-            painter.drawRect(rect)
-            text = header_text
-            painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, text)
-            x += width
-
-        # y += header_height  # Removed to prevent double increment
-
-        # Adjust y before drawing rows
-        y += header_height
-
-        # Draw table rows
-        for row in range(rows):
-            x = page_rect.left()
-            for col in range(cols):
-                width = col_widths[col]
-                height = row_heights[row]
-                rect = QRectF(x, y, width, height)
-                painter.drawRect(rect)
-                text = self.table.item(row, col).text()
-                painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, text)
-                x += width
-            y += row_heights[row]
-
-        painter.end()
+            title = f"월 단위 현황 ({getattr(self, 'curr_month_str', '선택된 월')})"
+            export_table_to_pdf(self.table, file_path, title, orientation="landscape", font_size=12)
+        except Exception as e:
+            QMessageBox.critical(self, "오류", f"PDF 저장 중 오류 발생:\n{str(e)}")

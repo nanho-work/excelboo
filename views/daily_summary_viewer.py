@@ -3,6 +3,7 @@ import pandas as pd
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QComboBox, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, QHeaderView
 from PyQt6.QtCore import Qt
 import matplotlib.pyplot as plt
+from utils.pdf_exporter import export_table_to_pdf
 
 
 class DailySummaryViewer(QDialog):
@@ -130,84 +131,11 @@ class DailySummaryViewer(QDialog):
             self.table.setRowHeight(row, row_height)
 
     def handle_print(self):
-        import sys
-        from matplotlib import font_manager
-
-        # OS에 따라 기본 한글 글꼴 설정
-        font_prop = font_manager.FontProperties(
-            family='Malgun Gothic' if sys.platform == 'win32' else 'AppleGothic',
-            size=14
-        )
-
-        from matplotlib.backends.backend_pdf import PdfPages
-        from matplotlib.table import Table
-
-        def wrap_text(text, max_length=15):
-            return text  # 줄바꿈 제거
-
-        file_path, _ = QFileDialog.getSaveFileName(self, "PDF로 저장", "", "PDF Files (*.pdf)")
-        if not file_path:
-            return
-
-        with PdfPages(file_path) as pdf:
-            # ✅ 첫 번째 페이지: 표 출력 (도표 제외)
-            fig, ax = plt.subplots(figsize=(8.27, 11.69))
-            fig.suptitle(f"{self.date_selector.currentText()} 일일민원보고", fontproperties=font_prop, fontsize=16, y=0.98)
-            fig.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)  # ✅ A4 여백 설정 (5%)
-            ax.axis('off')
-
-            headers = [self.table.horizontalHeaderItem(i).text() for i in range(self.table.columnCount())]
-            rows = []
-            for row in range(self.table.rowCount()):
-                row_data = [self.table.item(row, col).text() if self.table.item(row, col) else "" for col in range(self.table.columnCount())]
-                rows.append(row_data)
-
-            table_data = [headers] + rows
-
-            # Dynamic bbox calculation for table height
-            row_count = len(table_data)
-            font_size = 14
-            height_unit = font_size / 600
-
-            def count_lines(cell):
-                return wrap_text(cell, 12).count("\n") + 1
-
-            row_heights = [height_unit * max(count_lines(cell) for cell in row) for row in table_data]
-            avg_cell_height = sum(row_heights) / row_count
-            total_table_height = avg_cell_height * row_count
-
-            bbox_top = 0.9
-            bbox_bottom = 0.1
-            available_height = bbox_top - bbox_bottom
-            height_ratio = min(total_table_height, available_height)
-            adjusted_bbox = [0.1, bbox_top - height_ratio, 0.8, height_ratio]
-
-            tab = Table(ax, bbox=adjusted_bbox)
-
-            # ✅ 표 데이터 생성 및 셀 폰트 적용
-            # font_size = 14  # 줄였을 경우
-            col_widths = [0.15, 0.3, 0.1, 0.1, 0.1, 0.1]
-            # cell_width = 1.0 / n_cols
-            # cell_height = max(0.03, min(0.2, 0.9 / n_rows))
-            num_lines = max(cell.count("\n") + 1 for row in table_data for cell in row)
-            cell_height = min(0.03 * num_lines, 0.2)
-
-            for i, row in enumerate(table_data):
-                for j, cell in enumerate(row):
-                    wrapped_cell = wrap_text(cell, max_length=12)
-                    height_unit = font_size / 600  # 예: 14/600 ≈ 0.023
-                    cell_height = height_unit * (wrapped_cell.count("\n") + 1)
-                    cell_obj = tab.add_cell(
-                        i, j, col_widths[j], cell_height, text=wrapped_cell, loc='center',
-                        facecolor='#cccccc' if i == 0 else 'white'
-                    )
-                    # ✅ 셀 폰트 및 크기 적용
-                    cell_obj.get_text().set_fontproperties(font_prop)
-                    cell_obj.get_text().set_fontsize(font_size)
-                    cell_obj.set_height(cell_height)
-
-            ax.add_table(tab)
-            # ✅ 표 전체 크기 맞춤 조정
-           
-            pdf.savefig(fig)
-            plt.close(fig)
+        try:
+            file_path, _ = QFileDialog.getSaveFileName(self, "PDF로 저장", "", "PDF Files (*.pdf)")
+            if file_path:
+                if not file_path.lower().endswith(".pdf"):
+                    file_path += ".pdf"
+                export_table_to_pdf(self.table, file_path, f"{self.date_selector.currentText()} 일일민원보고", orientation="portrait")
+        except Exception as e:
+            print(f"PDF 저장 중 오류 발생: {e}")
