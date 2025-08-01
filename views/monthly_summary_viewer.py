@@ -74,7 +74,7 @@ class MonthlySummaryViewer(QDialog):
         merged["전월"] = merged["전월"].astype(int)
         merged["당월"] = merged["당월"].astype(int)
         merged["증감률"] = ((merged["당월"] - merged["전월"]) / merged["전월"].replace(0, pd.NA)) * 100
-        merged["증감률"] = merged["증감률"].round(1).fillna(0)
+        merged["증감률"] = pd.to_numeric(merged["증감률"], errors="coerce").round(1).fillna(0)
 
         all_cards = merged["카드사"].unique().tolist()
         reshaped = []
