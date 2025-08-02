@@ -16,18 +16,26 @@ from views.unpaid_total_view import UnpaidTotalView
 from views.unpaid_by_store_view import UnpaidByStoreView
 #
 
-from styles.button_styles import modern_default_button_style, selected_button_style, gradient_button_style
-from styles.theme_dark import dark_style
-from styles.theme_light import light_style
-
-from styles.scrollbar_styles import modern_scrollbar_style
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("민원 관리 툴")
+        self.setWindowTitle("조부용님의 민원 관리 툴")
         self.resize(1000, 700)
-        self.setStyleSheet("background-color: #ffffff;")
+        qss_files = [
+            "base.qss",
+            "buttons.qss",
+            "inputs.qss",
+            "combo.qss",
+            "table.qss",
+            "scrollbar.qss"
+        ]
+        qss_path = os.path.join(os.path.dirname(__file__), "styles")
+        combined_style = ""
+        for qss_file in qss_files:
+            file_path = os.path.join(qss_path, qss_file)
+            with open(file_path, "r", encoding="utf-8") as f:
+                combined_style += f.read()
+        self.setStyleSheet(combined_style)
 
         # 전체 레이아웃
         main_widget = QWidget()
@@ -42,14 +50,10 @@ class MainWindow(QMainWindow):
             "전체미수채권", "가맹점별미수채권현황"
         ]
         sidebar_frame = QFrame()
+        sidebar_frame.setObjectName("sidebarFrame")
         sidebar_layout = QVBoxLayout()
         sidebar_frame.setLayout(sidebar_layout)
         sidebar_frame.setFixedWidth(200)
-        sidebar_frame.setStyleSheet("""
-            background-color: #f5f0e6;
-            border-top-right-radius: 12px;
-            border-bottom-right-radius: 12px;
-        """)
 
         # 테마 전환 버튼 영역
         theme_toggle_layout = QHBoxLayout()
@@ -59,7 +63,6 @@ class MainWindow(QMainWindow):
         for theme_btn in [self.light_mode_btn, self.dark_mode_btn]:
             theme_btn.setFixedHeight(45)
             theme_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-            theme_btn.setStyleSheet(modern_default_button_style)
 
         self.light_mode_btn.clicked.connect(lambda: self.apply_theme("light"))
         self.dark_mode_btn.clicked.connect(lambda: self.apply_theme("dark"))
@@ -73,7 +76,6 @@ class MainWindow(QMainWindow):
             btn = QPushButton(name)
             btn.setFixedHeight(45)
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-            btn.setStyleSheet(modern_default_button_style)
             btn.clicked.connect(lambda checked, idx=index: self.switch_page(idx))
             sidebar_layout.addWidget(btn)
             self.buttons.append(btn)
@@ -103,10 +105,14 @@ class MainWindow(QMainWindow):
 
         # 모든 버튼 기본 스타일로 리셋
         for i, btn in enumerate(self.buttons):
-            btn.setStyleSheet(modern_default_button_style)
+            btn.setProperty("selected", False)
+            btn.style().unpolish(btn)
+            btn.style().polish(btn)
 
         # 선택된 버튼 강조
-        self.buttons[index].setStyleSheet(selected_button_style)
+        self.buttons[index].setProperty("selected", True)
+        self.buttons[index].style().unpolish(self.buttons[index])
+        self.buttons[index].style().polish(self.buttons[index])
 
     def receive_full_data(self, df):
         self.full_df = df
@@ -114,18 +120,10 @@ class MainWindow(QMainWindow):
         self.monthly_view.set_full_data(df)
 
     def apply_theme(self, mode):
-        if mode == "dark":
-            self.setStyleSheet(dark_style)
-            self.dark_mode_btn.setStyleSheet(selected_button_style)
-            self.light_mode_btn.setStyleSheet(modern_default_button_style)
-        else:
-            self.setStyleSheet(light_style)
-            self.light_mode_btn.setStyleSheet(selected_button_style)
-            self.dark_mode_btn.setStyleSheet(modern_default_button_style)
+        self.setStyleSheet(self.styleSheet())
 
 if __name__ == "__main__":
     app = QApplication([])
-    app.setStyleSheet(modern_scrollbar_style)
     window = MainWindow()
     window.show()
     app.exec()

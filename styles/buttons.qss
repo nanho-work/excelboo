@@ -1,0 +1,57 @@
+/* Default Button */
+QPushButton {
+    background-color: #1E90FF;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    border: none;
+}
+QPushButton:hover {
+    background-color: #1C86EE;
+}
+
+/* Danger Button */
+QPushButton[danger="true"] {
+    background-color: #FF4C4C;
+}
+QPushButton[danger="true"]:hover {
+    background-color: #E04343;
+}
+
+/* Outline Button */
+QPushButton[outline="true"] {
+    background-color: transparent;
+    color: #1E90FF;
+    border: 2px solid #1E90FF;
+}
+QPushButton[outline="true"]:hover {
+    background-color: #E6F2FF;
+}
+
+/* Selected Button */
+QPushButton[selected="true"] {
+    background-color: #104E8B;
+    color: white;
+    font-weight: 600;
+    border: 2px solid #1E90FF;
+}
+QPushButton[selected="true"]:hover {
+    background-color: #0F3E6D;
+}
+
+/* Gradient Button */
+QPushButton[gradient="true"] {
+    background: qlineargradient(x1:1, y1:0, x2:0, y2:0, stop:0 #ffffff, stop:1 #bfdbfe);
+    color: #1e3a8a;
+    border: 1px solid #93c5fd;
+}
+QPushButton[gradient="true"]:hover {
+    background: qlineargradient(x1:1, y1:0, x2:0, y2:0, stop:0 #e0f2fe, stop:1 #bfdbfe);
+}
+
+/* Hover Transition (참고용) */
+QPushButton {
+    transition: background-color 0.3s ease-in-out;
+}

@@ -1,0 +1,25 @@
+QComboBox {
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 5px;
+    font-size: 14px;
+}
+QComboBox:hover {
+    background-color: #e8f5ff;
+}
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 20px;
+    border-left: 1px solid #ccc;
+}
+QComboBox::down-arrow {
+    image: url(down_arrow_icon.png); /* 아이콘 경로 지정 필요 */
+    width: 12px;
+    height: 12px;
+}
+QComboBox QAbstractItemView {
+    border: 1px solid #ccc;
+    selection-background-color: #e0f2fe;
+    selection-color: #000;
+}

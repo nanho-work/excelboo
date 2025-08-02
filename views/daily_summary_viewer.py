@@ -1,6 +1,6 @@
 # daily_summary_viewer.py
 import pandas as pd
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QComboBox, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, QHeaderView
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QComboBox, QTableWidget, QTableWidgetItem, QPushButton, QFileDialog, QHeaderView, QHBoxLayout
 from PyQt6.QtCore import Qt
 from utils.pdf_exporter import export_table_to_pdf
 
@@ -19,11 +19,18 @@ class DailySummaryViewer(QDialog):
         self.date_selector.addItems(sorted({str(d) for d in self.df["접수일"].dropna().unique()}))
         self.date_selector.currentIndexChanged.connect(self.update_view)
 
+        self.month_selector_layout = QHBoxLayout()
+        self.date_label = QLabel("기준 날짜 선택:")
+        self.month_selector_layout.addWidget(self.date_label)
+        self.month_selector_layout.addWidget(self.date_selector)
+        self.layout.insertLayout(0, self.month_selector_layout)
+
         self.label = QLabel("날짜를 선택하세요")
         self.table = QTableWidget()
+        self.table.setAlternatingRowColors(True)
+
 
         self.layout.addWidget(self.label)
-        self.layout.addWidget(self.date_selector)
         self.layout.addWidget(self.table)
 
         self.print_button = QPushButton("PDF로 저장")
@@ -90,6 +97,12 @@ class DailySummaryViewer(QDialog):
                     display_val = val
                 item = QTableWidgetItem(str(display_val))
                 item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
+                if j == 0:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+                elif j == 1:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+                else:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.table.setItem(i, j, item)
 
         # 합계 행 추가
@@ -112,7 +125,10 @@ class DailySummaryViewer(QDialog):
         for col in [2, 3, 4, 5]:
             item = self.table.item(total_rows, col)
             if item:
-                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                if col == 2 or col == 4:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                elif col == 3 or col == 5:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
 
         # 열 너비 자동 조정
@@ -122,6 +138,7 @@ class DailySummaryViewer(QDialog):
         font = self.table.font()
         font.setPointSize(16)
         self.table.setFont(font)
+        self.table.setAlternatingRowColors(True)
 
         metrics = self.table.fontMetrics()
         row_height = metrics.height() + 20  # Add padding

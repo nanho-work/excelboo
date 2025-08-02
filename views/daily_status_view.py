@@ -1,9 +1,10 @@
-# 일단위 현황
 import pandas as pd
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QLabel, QHBoxLayout
 from PyQt6.QtCore import Qt
 from .daily_detail_dialog import DailyDetailDialog
 from .daily_summary_viewer import DailySummaryViewer
+from widgets.pie_chart_widget import PieChartWidget
+from .daily_pie_dialog import DailyPieDialog
 
 class DailyStatusView(QWidget):
     def __init__(self):
@@ -13,10 +14,15 @@ class DailyStatusView(QWidget):
         self.table = QTableWidget()
         self.summary_button = QPushButton("PDF 파일 생성")
         self.summary_button.clicked.connect(self.show_summary_viewer)
+        self.chart_button = QPushButton("차트 보기")
+        self.chart_button.clicked.connect(self.show_chart_dialog)
         self.full_df = None  # To hold externally provided DataFrame
 
         self.layout.addWidget(self.label)
-        self.layout.addWidget(self.summary_button)
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.summary_button)
+        button_layout.addWidget(self.chart_button)
+        self.layout.addLayout(button_layout)
         self.layout.addWidget(self.table)
         self.setLayout(self.layout)
         self.table.cellDoubleClicked.connect(self.show_detail_popup)
@@ -44,10 +50,10 @@ class DailyStatusView(QWidget):
                 민원건수=("TID명", "count"),
                 기한내처리건수=("처리상태", lambda x: x.str.lower().eq("y").sum())
             ).reset_index()
-            grouped["처리율"] = ((grouped["기한내처리건수"] / grouped["민원건수"]) * 100).round(1).astype(str) + "%"
+            grouped["회신율"] = ((grouped["기한내처리건수"] / grouped["민원건수"]) * 100).round(1).astype(str) + "%"
             total_by_date = grouped.groupby("접수일")["민원건수"].transform("sum")
             grouped["날짜별민원비중"] = ((grouped["민원건수"] / total_by_date) * 100).round(1).astype(str) + "%"
-            column_order = ["접수일", "가맹점명", "TID명", "날짜별민원비중", "민원건수", "기한내처리건수", "처리율"]
+            column_order = ["접수일", "가맹점명", "TID명", "날짜별민원비중", "민원건수", "기한내처리건수", "회신율"]
             grouped = grouped[column_order]
             self.display_table(grouped)
             self.label.setText("일 단위 현황 생성 완료")
@@ -68,11 +74,33 @@ class DailyStatusView(QWidget):
         self.table.setRowCount(len(df))
         self.table.setHorizontalHeaderLabels(df.columns)
 
+        # Set header font, alignment, and background
+        from PyQt6.QtGui import QFont, QColor, QBrush
+        header_font = QFont()
+        header_font.setBold(True)
+        for i in range(self.table.columnCount()):
+            item = self.table.horizontalHeaderItem(i)
+            if item:
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                item.setBackground(QBrush(QColor("#f0f0f0")))
+
+        # Set default row height and alternating row colors
+        self.table.verticalHeader().setDefaultSectionSize(30)
+        self.table.setAlternatingRowColors(True)
+
         for i, row in df.iterrows():
             for j, val in enumerate(row):
                 item = QTableWidgetItem(str(val))
                 item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
+                if j == 0 or j == 1:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+                elif "건수" in df.columns[j] or "율" in df.columns[j] or "비중" in df.columns[j]:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+                else:
+                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.table.setItem(i, j, item)
+
+        self.table.resizeColumnsToContents()
 
     def show_detail_popup(self, row, column):
         date_item = self.table.item(row, 0)  # Assumes 접수일 is in the first column
@@ -91,6 +119,13 @@ class DailyStatusView(QWidget):
         if self.full_df is not None:
             dlg = DailySummaryViewer(self.full_df, self)
             dlg.exec()
+
+    def show_chart_dialog(self):
+        if self.full_df is None:
+            return
+        df = self.full_df.copy()
+        dlg = DailyPieDialog(df, self)
+        dlg.exec()
     def debug_column_types(self):
         if self.full_df is not None:
             print("📌 전체 컬럼 데이터 타입:")

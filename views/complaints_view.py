@@ -4,16 +4,13 @@ from PyQt6.QtCore import Qt, pyqtSignal
 import pandas as pd
 import os
 from dialogs.sheet_select_dialog import SheetSelectDialog
-from styles.button_styles import modern_default_button_style
-from styles.scrollbar_styles import modern_scrollbar_style
-from styles.search_box_styles import modern_search_box_style
 
 class ComplaintsView(QWidget):
     data_loaded = pyqtSignal(pd.DataFrame)
 
     def __init__(self):
         super().__init__()
-        self.setStyleSheet(modern_scrollbar_style)
+        # self.setStyleSheet(modern_scrollbar_style)
         self.setWindowTitle("전체민원")
         layout = QVBoxLayout(self)
 
@@ -25,17 +22,17 @@ class ComplaintsView(QWidget):
         button_layout = QHBoxLayout()
 
         self.load_button = QPushButton("전체민원 엑셀 불러오기")
-        self.load_button.setStyleSheet(modern_default_button_style)
+        self.load_button.setProperty("class", "menu-button")
         self.load_button.clicked.connect(self.load_excel)
         button_layout.addWidget(self.load_button)
 
         self.save_button = QPushButton("수정된 내용 엑셀로 저장")
-        self.save_button.setStyleSheet(modern_default_button_style)
+        self.save_button.setProperty("class", "menu-button")
         self.save_button.clicked.connect(self.save_to_excel)
         button_layout.addWidget(self.save_button)
 
         self.add_row_button = QPushButton("행 추가")
-        self.add_row_button.setStyleSheet(modern_default_button_style)
+        self.add_row_button.setProperty("class", "menu-button")
         self.add_row_button.clicked.connect(self.add_row)
         button_layout.addWidget(self.add_row_button)
 
@@ -43,7 +40,7 @@ class ComplaintsView(QWidget):
         layout.addLayout(button_layout)
 
         self.search_box = QLineEdit()
-        self.search_box.setStyleSheet(modern_search_box_style)
+        self.search_box.setProperty("class", "search-box")
         self.search_box.setPlaceholderText("검색어를 입력하세요...")
         self.search_box.textChanged.connect(self.search_data)
         layout.addWidget(self.search_box)

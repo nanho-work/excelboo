@@ -1,0 +1,11 @@
+/* Base Theme */
+QMainWindow, QWidget {
+    background-color: #ffffff;
+    color: #000000;
+}
+QLabel {
+    color: #000000;
+}
+QFrame {
+    background-color: #f9fafc;
+}
