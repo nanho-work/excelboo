@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             btn.setWordWrap(True)
             btn.setStyleSheet("QPushButton { text-align: center; padding: 4px; }")
-            btn.clicked.connect(lambda checked, idx=index: self.switch_page(idx))
+            btn.clicked.connect(self.create_switch_handler(index))
             sidebar_layout.addWidget(btn)
             self.buttons.append(btn)
         sidebar_layout.addStretch()
@@ -151,3 +151,5 @@ if __name__ == "__main__":
 
     QTimer.singleShot(2000, lambda: splash.fade_out(show_main))
     app.exec()
+    def create_switch_handler(self, index):
+        return lambda checked=False: self.switch_page(index)
