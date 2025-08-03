@@ -6,7 +6,7 @@ class SplashScreen(QSplashScreen):
     def __init__(self):
         super().__init__()
         self.setFixedSize(600, 300)
-        self.setStyleSheet("background-color: white;")
+        self.setStyleSheet("background-color: #e6f5e6;")  # 연한 연녹색
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
 
         # 텍스트 라벨

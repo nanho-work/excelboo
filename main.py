@@ -127,6 +127,7 @@ class MainWindow(QMainWindow):
         self.full_df = df
         self.daily_view.set_full_data(df)
         self.monthly_view.set_full_data(df)
+        self.monthly_store_report_view.set_full_data(df)
 
     def apply_theme(self, mode):
         self.setStyleSheet(self.styleSheet())
