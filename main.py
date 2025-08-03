@@ -22,6 +22,13 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("민원 관리 툴")
         self.resize(1000, 700)
+
+        if getattr(sys, 'frozen', False):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.dirname(__file__)
+
+        qss_path = os.path.join(base_path, "styles")
         qss_files = [
             "base.qss",
             "buttons.qss",
@@ -30,7 +37,6 @@ class MainWindow(QMainWindow):
             "table.qss",
             "scrollbar.qss"
         ]
-        qss_path = os.path.join(os.path.dirname(__file__), "styles")
         combined_style = ""
         for qss_file in qss_files:
             file_path = os.path.join(qss_path, qss_file)
