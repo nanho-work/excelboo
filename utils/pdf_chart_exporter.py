@@ -1,33 +1,33 @@
-# QPixmap: 이미지를 생성하고 조작하는 데 사용하는 클래스 (렌더링용)
-from PyQt6.QtGui import QPixmap
-
-# QSize: 너비와 높이를 나타내는 크기 객체
-from PyQt6.QtCore import QSize
-
-# QPainter: PDF 또는 이미지에 그래픽을 그릴 수 있게 해주는 클래스
-# QPdfWriter: PDF 파일을 생성하고 작성하는 데 사용하는 클래스
-# QPageSize: 페이지 크기를 설정하기 위한 클래스
-from PyQt6.QtGui import QPainter, QPdfWriter, QPageSize
-
-# QRectF: 부동소수점 기반 사각형 좌표 (텍스트 정렬 등에서 사용)
-# Qt: Qt에서 제공하는 다양한 상수 (정렬 옵션 등 포함)
-from PyQt6.QtCore import QRectF, Qt
-
-# QChartView: Qt 차트를 포함하는 뷰 위젯
+from PyQt6.QtCore import QSize, QRectF, Qt, QSizeF, QMarginsF
+from PyQt6.QtGui import QPixmap, QPainter, QPdfWriter, QPageSize, QPageLayout
+from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCharts import QChartView
-
-# QSizeF: 부동소수점 기반의 크기 정보
-from PyQt6.QtCore import QSizeF
+from PyQt6.QtCharts import QPieSeries
 
 # QChartView에서 내부 차트 영역만 캡처하여 PDF로 저장하는 함수
 def export_qchartview_to_pdf(chart_view, file_path: str, title: str = ""):
-    from PyQt6.QtCore import QRectF, Qt
-    from PyQt6.QtGui import QPainter, QPdfWriter, QPageSize
-    from PyQt6.QtWidgets import QApplication
-
     pdf_writer = QPdfWriter(file_path)
     pdf_writer.setResolution(300)
-    pdf_writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
+    pdf_writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))  # 크기 설정
+    pdf_writer.setPageLayout(QPageLayout(QPageSize(QPageSize.PageSizeId.A4), QPageLayout.Orientation.Landscape, QMarginsF(0, 0, 0, 0)))
+
+    chart = chart_view.chart()
+
+    # 공통 폰트 설정
+    base_font = chart.font()
+    base_font.setPointSizeF(10.0)
+    chart.setFont(base_font)
+
+    # 시리즈 유형별로 설정 적용
+    for series in chart.series():
+        if isinstance(series, QPieSeries):
+            series.setLabelsVisible(True)
+            for slice in series.slices():
+                slice.setLabelFont(base_font)
+        elif hasattr(series, "barSets"):  # QBarSeries 또는 유사 객체
+            chart.legend().setFont(base_font)
+
+    chart.legend().setFont(base_font)
 
     painter = QPainter(pdf_writer)
     try:

@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QTableWidget, QTableWi
 from PyQt6.QtGui import QFont, QColor, QBrush
 from PyQt6.QtCore import Qt
 import pandas as pd
+from .monthly_pie_dialog import MonthlyPieDialog
 
 class MonthlyStatusView(QWidget):
     def __init__(self):
@@ -10,12 +11,17 @@ class MonthlyStatusView(QWidget):
         self.setWindowTitle("월 단위 현황")
 
         layout = QVBoxLayout()
-        self.label = QLabel("월 단위 현황 데이터 없음")
         self.summary_button = QPushButton("PDF 파일 생성")
         self.summary_button.clicked.connect(self.show_summary_viewer)
+        self.pie_button = QPushButton("월별 파이차트")
+        self.pie_button.clicked.connect(self.open_monthly_pie)
         self.table = QTableWidget()
-        layout.addWidget(self.label)
-        layout.addWidget(self.summary_button)
+        from PyQt6.QtWidgets import QHBoxLayout
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.summary_button)
+        button_layout.addWidget(self.pie_button)
+        layout.addLayout(button_layout)
         layout.addWidget(self.table)
         self.setLayout(layout)
 
@@ -175,3 +181,12 @@ class MonthlyStatusView(QWidget):
                 dlg.exec()
         except Exception as e:
             print(f"❌ MonthlySummaryViewer 실행 오류: {e}")
+
+    def open_monthly_pie(self):
+        if hasattr(self, "full_df") and self.full_df is not None:
+            try:
+                
+                dlg = MonthlyPieDialog(self.full_df, self)
+                dlg.exec()
+            except Exception as e:
+                print(f"❌ MonthlyPieDialog 실행 오류: {e}")

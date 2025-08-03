@@ -10,7 +10,6 @@ class DailyStatusView(QWidget):
     def __init__(self):
         super().__init__()
         self.layout = QVBoxLayout()
-        self.label = QLabel("일 단위 현황 데이터 없음")
         self.table = QTableWidget()
         self.summary_button = QPushButton("PDF 파일 생성")
         self.summary_button.clicked.connect(self.show_summary_viewer)
@@ -18,7 +17,6 @@ class DailyStatusView(QWidget):
         self.chart_button.clicked.connect(self.show_chart_dialog)
         self.full_df = None  # To hold externally provided DataFrame
 
-        self.layout.addWidget(self.label)
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.summary_button)
         button_layout.addWidget(self.chart_button)
@@ -33,7 +31,7 @@ class DailyStatusView(QWidget):
 
     def generate_report(self):
         if self.full_df is None:
-            self.label.setText("전체민원 데이터가 없습니다.")
+            # self.label.setText("전체민원 데이터가 없습니다.")
             return
         try:
             df = self.full_df.copy()
@@ -41,7 +39,7 @@ class DailyStatusView(QWidget):
             df.columns = df.columns.str.strip()
             required_cols = ["접수일", "가맹점명", "TID명", "처리상태"]
             if not all(col in df.columns for col in required_cols):
-                self.label.setText("필수 컬럼이 누락됨")
+                # self.label.setText("필수 컬럼이 누락됨")
                 return
             df["접수일"] = pd.to_datetime(df["접수일"], errors="coerce")
             df = df.dropna(subset=["접수일"])
@@ -56,10 +54,11 @@ class DailyStatusView(QWidget):
             column_order = ["접수일", "가맹점명", "TID명", "날짜별민원비중", "민원건수", "기한내처리건수", "회신율"]
             grouped = grouped[column_order]
             self.display_table(grouped)
-            self.label.setText("일 단위 현황 생성 완료")
+            # self.label.setText("일 단위 현황 생성 완료")
             self.debug_column_types()
         except Exception as e:
-            self.label.setText(f"현황 생성 실패: {e}")
+            # self.label.setText(f"현황 생성 실패: {e}")
+            pass
 
     def display_table(self, df):
         # 접수일 + 가맹점명 기준 중복 제거 표시
