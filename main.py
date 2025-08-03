@@ -83,6 +83,8 @@ class MainWindow(QMainWindow):
             btn = QPushButton(name)
             btn.setFixedHeight(45)
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            btn.setWordWrap(True)
+            btn.setStyleSheet("QPushButton { text-align: center; padding: 4px; }")
             btn.clicked.connect(lambda checked, idx=index: self.switch_page(idx))
             sidebar_layout.addWidget(btn)
             self.buttons.append(btn)
