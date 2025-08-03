@@ -48,8 +48,9 @@ class MonthlyStoreReportView(QWidget):
         self.load_data("2025", "07")
 
     def load_data(self, year, month):
-        file_path = os.path.expanduser("~/Downloads/test.xlsx")
-        df = pd.read_excel(file_path, sheet_name="전체민원")
+        if not hasattr(self, "full_df") or self.full_df is None:
+            return
+        df = self.full_df.copy()
 
         # 날짜 전처리 및 필터링
         df["접수일"] = pd.to_datetime(df["접수일"], errors="coerce")
@@ -141,3 +142,6 @@ class MonthlyStoreReportView(QWidget):
                         item.setBackground(Qt.GlobalColor.yellow)
                         row_match = True
             self.table.setRowHidden(row, not row_match if text.strip() else False)
+    def set_full_data(self, df):
+        self.full_df = df
+        self.load_data(self.year_combo.currentText(), self.month_combo.currentText())
