@@ -103,9 +103,6 @@ class MonthlySummaryViewer(QDialog):
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                     self.table.setItem(i, j, item)
 
-        font = self.table.font()
-        font.setPointSize(13)
-        self.table.setFont(font)
         self.table.resizeColumnsToContents()
 
     def generate_summary(self):

@@ -15,11 +15,12 @@ from views.complaints_view import ComplaintsView
 from views.unpaid_total_view import UnpaidTotalView
 from views.unpaid_by_store_view import UnpaidByStoreView
 #
+from views.monthly_store_report_view import MonthlyStoreReportView
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("조부용님의 민원 관리 툴")
+        self.setWindowTitle("민원 관리 툴")
         self.resize(1000, 700)
         qss_files = [
             "base.qss",
@@ -46,8 +47,8 @@ class MainWindow(QMainWindow):
 
         # 사이드바 버튼 메뉴
         self.menu_items = [
-            "전체민원", "일 단위 현황", "월 단위 현황",
-            "전체미수채권", "가맹점별미수채권현황"
+            "전체민원", "일 단위 현황", "월별 카드사 증감 현황",
+            "월별 가맹점 종합리포트", "전체미수채권", "가맹점별미수채권현황"
         ]
         sidebar_frame = QFrame()
         sidebar_frame.setObjectName("sidebarFrame")
@@ -91,6 +92,8 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.complaints_view)  # 전체민원 첫 페이지로
         self.stack.addWidget(self.daily_view)
         self.stack.addWidget(self.monthly_view)
+        self.monthly_store_report_view = MonthlyStoreReportView()
+        self.stack.addWidget(self.monthly_store_report_view)
         self.stack.addWidget(UnpaidTotalView())
         self.stack.addWidget(UnpaidByStoreView())
 
@@ -123,7 +126,19 @@ class MainWindow(QMainWindow):
         self.setStyleSheet(self.styleSheet())
 
 if __name__ == "__main__":
+    from splash import SplashScreen
+    from PyQt6.QtCore import QTimer
+
     app = QApplication([])
-    window = MainWindow()
-    window.show()
+
+    splash = SplashScreen()
+    splash.show()
+
+    def show_main():
+        global window
+        window = MainWindow()
+        window.show()
+        splash.close()
+
+    QTimer.singleShot(2000, lambda: splash.fade_out(show_main))
     app.exec()

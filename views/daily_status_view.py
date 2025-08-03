@@ -73,16 +73,6 @@ class DailyStatusView(QWidget):
         self.table.setRowCount(len(df))
         self.table.setHorizontalHeaderLabels(df.columns)
 
-        # Set header font, alignment, and background
-        from PyQt6.QtGui import QFont, QColor, QBrush
-        header_font = QFont()
-        header_font.setBold(True)
-        for i in range(self.table.columnCount()):
-            item = self.table.horizontalHeaderItem(i)
-            if item:
-                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                item.setBackground(QBrush(QColor("#f0f0f0")))
-
         # Set default row height and alternating row colors
         self.table.verticalHeader().setDefaultSectionSize(30)
         self.table.setAlternatingRowColors(True)

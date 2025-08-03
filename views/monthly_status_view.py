@@ -119,15 +119,7 @@ class MonthlyStatusView(QWidget):
         self.table.setHorizontalHeaderLabels(df.columns)
 
         # 헤더 스타일 적용
-        header_font = QFont()
-        header_font.setBold(True)
-
-        for i in range(self.table.columnCount()):
-            item = self.table.horizontalHeaderItem(i)
-            if item:
-                item.setFont(header_font)
-                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                item.setBackground(QBrush(QColor("#f0f0f0")))
+        # Removed header font and background styling as per instructions
 
         # 테이블 기본 스타일
         self.table.verticalHeader().setDefaultSectionSize(30)
