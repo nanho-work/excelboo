@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         sidebar_frame.setObjectName("sidebarFrame")
         sidebar_layout = QVBoxLayout()
         sidebar_frame.setLayout(sidebar_layout)
-        sidebar_frame.setFixedWidth(200)
+        sidebar_frame.setFixedWidth(240)
 
         # 테마 전환 버튼 영역
         theme_toggle_layout = QHBoxLayout()
@@ -83,9 +83,7 @@ class MainWindow(QMainWindow):
             btn = QPushButton(name)
             btn.setFixedHeight(45)
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-            btn.setWordWrap(True)
-            btn.setStyleSheet("QPushButton { text-align: center; padding: 4px; }")
-            btn.clicked.connect(self.create_switch_handler(index))
+            btn.clicked.connect(lambda checked, idx=index: self.switch_page(idx))
             sidebar_layout.addWidget(btn)
             self.buttons.append(btn)
         sidebar_layout.addStretch()
@@ -151,5 +149,3 @@ if __name__ == "__main__":
 
     QTimer.singleShot(2000, lambda: splash.fade_out(show_main))
     app.exec()
-    def create_switch_handler(self, index):
-        return lambda checked=False: self.switch_page(index)
