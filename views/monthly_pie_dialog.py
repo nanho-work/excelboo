@@ -90,7 +90,7 @@ class MonthlyPieDialog(QDialog):
                 self.layout.removeWidget(self.chart)
                 self.chart.deleteLater()
 
-            self.chart = BarChartWidget(f"{selected_month} 가맹점별 카드사 증감률", chart_data)
+            self.chart = BarChartWidget(f"{selected_month} 가맹점별 카드사 민원 증감률", chart_data)
             from PyQt6.QtWidgets import QSizePolicy
             self.chart.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
             self.layout.addWidget(self.chart)
