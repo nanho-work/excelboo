@@ -4,7 +4,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.table import Table
 from PyQt6.QtWidgets import QTableWidget
 
-def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orientation: str = 'portrait', font_size: int = 12, highlight_bold_rows: bool = False):
+def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orientation: str = 'portrait', font_size: int = 12):
     try:
         TITLE_FONT_SIZE = 14  # 타이틀용 폰트 크기 (고정)
         import sys
@@ -95,16 +95,8 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
                         cell_obj.PAD = 0.1
                         cell_obj.get_text().set_fontproperties(font_prop)  # 셀 텍스트 설정 및 폰트 속성 적용
                         cell_obj.get_text().set_fontsize(font_size)  # 셀 내부 폰트 크기 (기본값 12)
-                        if highlight_bold_rows and i > 0:
-                            qt_row_index = current_row + i - 1  # Adjust for header
-                            if 0 <= qt_row_index < table.rowCount():  # Ensure valid index
-                                first_item = table.item(qt_row_index, 0)
-                                if first_item and ">>" in first_item.text():
-                                    cell_obj.get_text().set_weight("bold")
-                                else:
-                                    cell_obj.get_text().set_weight("normal")
-                            else:
-                                cell_obj.get_text().set_weight("normal")
+                        if i > 0 and ">>" in row[0]:
+                            cell_obj.get_text().set_weight("bold")
                         else:
                             cell_obj.get_text().set_weight("normal")
                         cell_obj.set_height(cell_height)  # 셀 높이 지정
