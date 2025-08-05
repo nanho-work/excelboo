@@ -75,7 +75,11 @@ class MonthlyStoreReportView(QWidget):
 
         거래액 = filtered_df.groupby(['가맹점명', 'TID명'])['승인금액'].sum().reset_index(name='거래액')
         거래액["거래액"] = 거래액["거래액"].fillna(0).astype(int)
-        취소금액 = filtered_df.groupby(['가맹점명', 'TID명'])['입금금액'].sum().reset_index(name='취소금액')
+        # '취소여부'가 '취소완료'인 경우만 필터링
+        취소완료_df = filtered_df[filtered_df['취소여부'] == '취소완료']
+
+        # 취소완료된 건의 입금금액만 합산
+        취소금액 = 취소완료_df.groupby(['가맹점명', 'TID명'])['입금금액'].sum().reset_index(name='취소금액')
         미수금_df = filtered_df[filtered_df['입금여부'] == '미입금']
         미수금 = 미수금_df.groupby(['가맹점명', 'TID명'])['입금금액'].sum().reset_index(name='미수금')
 
