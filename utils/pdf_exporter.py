@@ -26,12 +26,7 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
             total_length = sum(col_lengths)
             col_widths = [length / total_length for length in col_lengths]  # 열 너비 비율 계산
 
-            # 행 높이 고정값 설정 (폰트 크기와 무관하게 동일한 높이 사용)
-            fixed_row_height = 0.028  # 행 높이를 절대값으로 고정 (페이지 전체 영역 기준 비율)
-
             # Calculate how many rows fit per page
-            available_height = 0.8  # space in fig bbox
-
             global_prev_value = None
 
             current_row = 0
@@ -75,8 +70,6 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
                 while len(page_rows) < rows_per_page + 1:
                     page_rows.append([""] * col_count)
 
-                total_table_height = fixed_row_height * len(page_rows)
-
                 adjusted_bbox = [0.01, 0.02, 0.98, 0.96]
 
                 tab = Table(ax, bbox=adjusted_bbox)  # 테이블 생성
@@ -84,10 +77,8 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
                 for i, row in enumerate(page_rows):
                     for j, cell in enumerate(row):
                         alignment = Qt.AlignmentFlag.AlignCenter  # 기본값
-                        is_bold = False
                         if i > 0 and table.item(current_row + i - 1, j):  # 데이터 행이고, 셀이 존재한다면
                             alignment = table.item(current_row + i - 1, j).textAlignment()
-                            is_bold = table.item(current_row + i - 1, j).font().bold()
 
                         if alignment & Qt.AlignmentFlag.AlignLeft:
                             cell_loc = 'left'
@@ -104,8 +95,10 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
                         cell_obj.PAD = 0.1
                         cell_obj.get_text().set_fontproperties(font_prop)  # 셀 텍스트 설정 및 폰트 속성 적용
                         cell_obj.get_text().set_fontsize(font_size)  # 셀 내부 폰트 크기 (기본값 12)
-                        if is_bold and highlight_bold_rows:
-                            cell_obj.get_text().set_weight('bold')
+                        if highlight_bold_rows and i > 0:
+                            qt_item = table.item(current_row + i - 1, j)
+                            if qt_item and qt_item.font().bold():
+                                cell_obj.get_text().set_weight("bold")
                         cell_obj.set_height(cell_height)  # 셀 높이 지정
 
                         # 빈 행이면 테두리 투명 처리
