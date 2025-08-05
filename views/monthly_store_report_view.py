@@ -66,7 +66,7 @@ class MonthlyStoreReportView(QWidget):
         전체민원수 = filtered_df.shape[0]
         민원발생건수['비중(%)'] = (민원발생건수['민원발생건수'] / 전체민원수 * 100).round(1)
 
-        처리완료_df = filtered_df[filtered_df['처리결과'] == 'Y']
+        처리완료_df = filtered_df[filtered_df['처리상태'] == 'Y']
         민원처리건수 = 처리완료_df.groupby(['가맹점명', 'TID명']).size().reset_index(name='민원처리건수')
 
         결과 = 민원발생건수.merge(민원처리건수, on=['가맹점명', 'TID명'], how='left')
