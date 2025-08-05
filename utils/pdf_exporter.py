@@ -98,12 +98,11 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
                         if highlight_bold_rows and i > 0:
                             qt_row_index = current_row + i - 1  # Adjust for header
                             if 0 <= qt_row_index < table.rowCount():  # Ensure valid index
-                                row_is_bold = all(
-                                    table.item(qt_row_index, col_idx)
-                                    and table.item(qt_row_index, col_idx).font().bold()
-                                    for col_idx in range(table.columnCount())
-                                )
-                                cell_obj.get_text().set_weight("bold" if row_is_bold else "normal")
+                                first_item = table.item(qt_row_index, 0)
+                                if first_item and ">>" in first_item.text():
+                                    cell_obj.get_text().set_weight("bold")
+                                else:
+                                    cell_obj.get_text().set_weight("normal")
                             else:
                                 cell_obj.get_text().set_weight("normal")
                         else:
