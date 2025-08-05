@@ -133,19 +133,7 @@ class MainWindow(QMainWindow):
         self.setStyleSheet(self.styleSheet())
 
 if __name__ == "__main__":
-    from splash import SplashScreen
-    from PyQt6.QtCore import QTimer
-
     app = QApplication([])
-
-    splash = SplashScreen()
-    splash.show()
-
-    def show_main():
-        global window
-        window = MainWindow()
-        window.show()
-        splash.close()
-
-    QTimer.singleShot(2000, lambda: splash.fade_out(show_main))
+    window = MainWindow()
+    window.show()
     app.exec()

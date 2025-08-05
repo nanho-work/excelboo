@@ -1,8 +1,9 @@
 import pandas as pd
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QHBoxLayout, QComboBox, QPushButton, QFileDialog
 from PyQt6.QtCore import Qt
-import os
-import datetime
+from utils.pdf_exporter import export_table_to_pdf
+
+
 
 class MonthlyStoreReportView(QWidget):
     def __init__(self, parent=None):
@@ -14,7 +15,15 @@ class MonthlyStoreReportView(QWidget):
         self.setLayout(self.layout)
 
         filter_layout = QHBoxLayout()
-        # Filter UI removed
+        self.month_combo = QComboBox()
+        self.month_combo.currentIndexChanged.connect(self.load_data)
+        filter_layout.addWidget(QLabel("월 선택"))
+        filter_layout.addWidget(self.month_combo)
+        # PDF 저장 버튼 추가
+        self.export_button = QPushButton("PDF 저장")
+        self.export_button.clicked.connect(self.export_pdf)
+        filter_layout.addWidget(self.export_button)
+        self.layout.addLayout(filter_layout)
 
         label = QLabel("2025년 7월 가맹점 종합 리포트")
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -24,13 +33,24 @@ class MonthlyStoreReportView(QWidget):
         self.layout.addWidget(self.table)
 
     def set_full_data(self, df):
-        self.full_df = df
+        self.full_df = df.copy()
+        self.full_df["접수일"] = pd.to_datetime(self.full_df["접수일"], errors="coerce")
+        self.full_df["월"] = self.full_df["접수일"].dt.to_period("M")
+        months = sorted(self.full_df["월"].astype(str).unique())
+        self.month_combo.clear()
+        self.month_combo.addItems(months)
+        self.month_combo.setCurrentIndex(len(months) - 1)  # 최신 월 선택
         self.load_data()
 
     def load_data(self):
         if self.full_df is None:
             return
-        df = self.full_df.copy()
+
+        selected_month = self.month_combo.currentText()
+        if not selected_month:
+            return
+
+        df = self.full_df[self.full_df["월"].astype(str) == selected_month].copy()
 
         # 날짜 전처리 및 필터링
         df["접수일"] = pd.to_datetime(df["접수일"], errors="coerce")
@@ -76,6 +96,32 @@ class MonthlyStoreReportView(QWidget):
 
         결과 = 결과.fillna("")
 
+        # 합계 행 추가
+        total_민원처리건수 = 결과["민원처리건수"].sum()
+        total_민원발생건수 = 결과["민원발생건수"].sum()
+        total_전체민원수 = 전체민원수
+        total_거래액 = 결과["거래액"].sum()
+        total_취소금액 = 결과["취소금액"].sum()
+        total_미수금 = 결과["미수금"].sum()
+
+        total_row = {
+            "가맹점명": "합계",
+            "TID명": "",
+            "민원발생건수": total_민원발생건수,
+            "비중(%)": round((total_민원발생건수 / total_전체민원수) * 100, 1) if total_전체민원수 else "",
+            "민원처리건수": total_민원처리건수,
+            "회신율(%)": round((total_민원처리건수 / total_민원발생건수) * 100, 1) if total_민원발생건수 else "",
+            "거래액": total_거래액,
+            "취소금액": total_취소금액,
+            "미수금": total_미수금,
+            "취소비율(%)": round((total_취소금액 / total_거래액) * 100, 1) if total_거래액 else "",
+            "미수비율(%)": round((total_미수금 / total_거래액) * 100, 1) if total_거래액 else "",
+            "거래건수": 결과["거래건수"].sum(),
+            "평균객단가": int(round(total_거래액 / 결과["거래건수"].sum(), 0)) if 결과["거래건수"].sum() else "",
+            "평균할부": round(결과["평균할부"].mean(), 1) if not 결과["평균할부"].isna().all() else ""
+        }
+        결과.loc[len(결과)] = total_row
+
         # 중복 가맹점명 제거: 동일 가맹점명의 첫 번째 행만 값 표시
         결과['__first_flag'] = ~결과.duplicated(subset=['가맹점명'])
         결과.loc[~결과['__first_flag'], '가맹점명'] = ""
@@ -109,3 +155,22 @@ class MonthlyStoreReportView(QWidget):
                 else:
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.table.setItem(row_idx, col_idx, item)
+
+    def export_pdf(self):
+        try:
+            if self.table.rowCount() == 0:
+                print("❌ 출력할 데이터가 없습니다.")
+                return
+
+            save_path, _ = QFileDialog.getSaveFileName(self, "PDF 저장", "", "PDF Files (*.pdf)")
+            if not save_path:
+                return
+
+            # Replace the existing PDF export logic with the new call including orientation and font_size
+            selected_month = self.month_combo.currentText()
+            title = f"{selected_month} 가맹점 종합리포트"
+            export_table_to_pdf(self.table, save_path, title, orientation="landscape", font_size=12)
+
+            print(f"✅ PDF 저장 완료: {save_path}")
+        except Exception as e:
+            print(f"❌ PDF 저장 중 오류 발생: {e}")
