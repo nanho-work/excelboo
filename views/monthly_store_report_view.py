@@ -104,8 +104,8 @@ class MonthlyStoreReportView(QWidget):
         subtotals = []
         for store, group in 결과.groupby('가맹점명'):
             subtotal = {
-                "가맹점명": f"{store} 소계",
-                "TID명": "",
+                "가맹점명": f"{store} ⟫⟫",
+                "TID명": "소계",
                 "민원발생건수": group["민원발생건수"].sum(),
                 "비중(%)": round(group["민원발생건수"].sum() / 전체민원수 * 100, 1) if 전체민원수 else 0,
                 "민원처리건수": group["민원처리건수"].sum(),
