@@ -4,7 +4,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.table import Table
 from PyQt6.QtWidgets import QTableWidget
 
-def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orientation: str = 'portrait', font_size: int = 12):
+def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orientation: str = 'portrait', font_size: int = 12, highlight_bold_rows: bool = False):
     try:
         TITLE_FONT_SIZE = 14  # 타이틀용 폰트 크기 (고정)
         import sys
@@ -83,12 +83,12 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
                 from PyQt6.QtCore import Qt
                 for i, row in enumerate(page_rows):
                     for j, cell in enumerate(row):
-                        # 셀 정렬 감지
                         alignment = Qt.AlignmentFlag.AlignCenter  # 기본값
+                        is_bold = False
                         if i > 0 and table.item(current_row + i - 1, j):  # 데이터 행이고, 셀이 존재한다면
                             alignment = table.item(current_row + i - 1, j).textAlignment()
+                            is_bold = table.item(current_row + i - 1, j).font().bold()
 
-                        # matplotlib Table에서 사용 가능한 정렬 문자열로 변환
                         if alignment & Qt.AlignmentFlag.AlignLeft:
                             cell_loc = 'left'
                         elif alignment & Qt.AlignmentFlag.AlignRight:
@@ -104,6 +104,8 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
                         cell_obj.PAD = 0.1
                         cell_obj.get_text().set_fontproperties(font_prop)  # 셀 텍스트 설정 및 폰트 속성 적용
                         cell_obj.get_text().set_fontsize(font_size)  # 셀 내부 폰트 크기 (기본값 12)
+                        if is_bold and highlight_bold_rows:
+                            cell_obj.get_text().set_weight('bold')
                         cell_obj.set_height(cell_height)  # 셀 높이 지정
 
                         # 빈 행이면 테두리 투명 처리

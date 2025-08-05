@@ -100,6 +100,38 @@ class MonthlyStoreReportView(QWidget):
 
         결과 = 결과.fillna("")
 
+        # Insert subtotal rows per store
+        subtotals = []
+        for store, group in 결과.groupby('가맹점명'):
+            subtotal = {
+                "가맹점명": f"{store} 소계",
+                "TID명": "",
+                "민원발생건수": group["민원발생건수"].sum(),
+                "비중(%)": round(group["민원발생건수"].sum() / 전체민원수 * 100, 1) if 전체민원수 else 0,
+                "민원처리건수": group["민원처리건수"].sum(),
+                "회신율(%)": round(group["민원처리건수"].sum() / group["민원발생건수"].sum() * 100, 1) if group["민원발생건수"].sum() else 0,
+                "거래액": group["거래액"].sum(),
+                "취소금액": group["취소금액"].sum(),
+                "미수금": group["미수금"].sum(),
+                "취소비율(%)": round(group["취소금액"].sum() / group["거래액"].sum() * 100, 1) if group["거래액"].sum() else 0,
+                "미수비율(%)": round(group["미수금"].sum() / group["거래액"].sum() * 100, 1) if group["거래액"].sum() else 0,
+                "거래건수": group["거래건수"].sum(),
+                "평균객단가": int(round(group["거래액"].sum() / group["거래건수"].sum(), 0)) if group["거래건수"].sum() else 0,
+                "평균할부": round(group["평균할부"].mean(), 1)
+            }
+            insert_index = 결과[결과["가맹점명"] == store].index.max() + 1
+            subtotals.append((insert_index, subtotal))
+
+        # Insert subtotal rows back into 결과 DataFrame
+        offset = 0
+        for idx, subtotal_row in subtotals:
+            결과 = pd.concat([
+                결과.iloc[:idx + offset],
+                pd.DataFrame([subtotal_row]),
+                결과.iloc[idx + offset:]
+            ]).reset_index(drop=True)
+            offset += 1
+
         # 합계 행 추가
         total_민원처리건수 = 결과["민원처리건수"].sum()
         total_민원발생건수 = 결과["민원발생건수"].sum()
@@ -154,6 +186,10 @@ class MonthlyStoreReportView(QWidget):
                     display_value = str(value)
 
                 item = QTableWidgetItem(display_value)
+                if str(row_data["가맹점명"]).endswith("소계"):
+                    font = item.font()
+                    font.setBold(True)
+                    item.setFont(font)
                 if col_name in ["거래액", "취소금액", "미수금", "평균객단가"]:
                     item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 else:
@@ -173,7 +209,7 @@ class MonthlyStoreReportView(QWidget):
             # Replace the existing PDF export logic with the new call including orientation and font_size
             selected_month = self.month_combo.currentText()
             title = f"{selected_month} 가맹점 종합리포트"
-            export_table_to_pdf(self.table, save_path, title, orientation="landscape", font_size=12)
+            export_table_to_pdf(self.table, save_path, title, orientation="landscape", font_size=12, highlight_bold_rows=True)
 
             print(f"✅ PDF 저장 완료: {save_path}")
         except Exception as e:
