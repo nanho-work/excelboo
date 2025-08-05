@@ -211,7 +211,7 @@ class MonthlyStoreReportView(QWidget):
             # Replace the existing PDF export logic with the new call including orientation and font_size
             selected_month = self.month_combo.currentText()
             title = f"{selected_month} 가맹점 종합리포트"
-            export_table_to_pdf(self.table, save_path, title, orientation="landscape", font_size=12, highlight_bold_rows=True)
+            export_table_to_pdf(self.table, save_path, title, orientation="landscape", font_size=12)
 
             print(f"✅ PDF 저장 완료: {save_path}")
         except Exception as e:
