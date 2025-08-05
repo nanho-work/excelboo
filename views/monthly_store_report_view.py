@@ -119,6 +119,7 @@ class MonthlyStoreReportView(QWidget):
                 "평균객단가": int(round(group["거래액"].sum() / group["거래건수"].sum(), 0)) if group["거래건수"].sum() else 0,
                 "평균할부": round(group["평균할부"].mean(), 1)
             }
+            subtotal["__row_type"] = "subtotal"
             insert_index = 결과[결과["가맹점명"] == store].index.max() + 1
             subtotals.append((insert_index, subtotal))
 
@@ -156,6 +157,7 @@ class MonthlyStoreReportView(QWidget):
             "평균객단가": int(round(total_거래액 / 결과["거래건수"].sum(), 0)) if 결과["거래건수"].sum() else "",
             "평균할부": round(결과["평균할부"].mean(), 1) if not 결과["평균할부"].isna().all() else ""
         }
+        total_row["__row_type"] = "total"
         결과.loc[len(결과)] = total_row
 
         # 중복 가맹점명 제거: 동일 가맹점명의 첫 번째 행만 값 표시
@@ -186,7 +188,7 @@ class MonthlyStoreReportView(QWidget):
                     display_value = str(value)
 
                 item = QTableWidgetItem(display_value)
-                if str(row_data["가맹점명"]).endswith("소계"):
+                if row_data.get("__row_type") in ["subtotal", "total"]:
                     font = item.font()
                     font.setBold(True)
                     item.setFont(font)
