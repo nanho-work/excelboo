@@ -96,7 +96,8 @@ def export_table_to_pdf(table: QTableWidget, file_path: str, title: str, orienta
                         cell_obj.get_text().set_fontproperties(font_prop)  # 셀 텍스트 설정 및 폰트 속성 적용
                         cell_obj.get_text().set_fontsize(font_size)  # 셀 내부 폰트 크기 (기본값 12)
                         if highlight_bold_rows and i > 0:
-                            qt_item = table.item(current_row + i - 1, j)
+                            qt_row_index = current_row + i - 1
+                            qt_item = table.item(qt_row_index, j)
                             if qt_item and qt_item.font().bold():
                                 cell_obj.get_text().set_weight("bold")
                         cell_obj.set_height(cell_height)  # 셀 높이 지정
