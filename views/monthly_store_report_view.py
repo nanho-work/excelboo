@@ -1,56 +1,75 @@
+from utils.combo_filter import combo_fillter
 import pandas as pd
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QHBoxLayout, QComboBox, QPushButton, QFileDialog
+from PyQt6.QtWidgets import QLabel, QTableWidgetItem, QFileDialog
 from PyQt6.QtCore import Qt
 from utils.pdf_exporter import export_table_to_pdf
+from widgets.base_report_widget import BaseReportWidget
 
-
-
-class MonthlyStoreReportView(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.full_df = None
-        self.setWindowTitle("월별 가맹점 종합리포트")
-        self.resize(1200, 800)
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
-
-        filter_layout = QHBoxLayout()
-        self.month_combo = QComboBox()
-        self.month_combo.currentIndexChanged.connect(self.load_data)
-        filter_layout.addWidget(QLabel("월 선택"))
-        filter_layout.addWidget(self.month_combo)
-        # PDF 저장 버튼 추가
-        self.export_button = QPushButton("PDF 저장")
-        self.export_button.clicked.connect(self.export_pdf)
-        filter_layout.addWidget(self.export_button)
-        self.layout.addLayout(filter_layout)
-
-        label = QLabel("2025년 7월 가맹점 종합 리포트")
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.layout.addWidget(label)
-
-        self.table = QTableWidget()
-        self.layout.addWidget(self.table)
+class MonthlyStoreReportView(BaseReportWidget):
+    def __init__(self, parent=None, pdf_button_label="PDF 저장"):
+        super().__init__(
+            title_text="",
+            parent=parent,
+            pdf_button_label=pdf_button_label,
+            on_combo_change=self.load_data,
+            on_pdf_click=self.export_pdf
+        )
+        self.day_combo.hide()
 
     def set_full_data(self, df):
-        self.full_df = df.copy()
-        self.full_df["접수일"] = pd.to_datetime(self.full_df["접수일"], errors="coerce")
-        self.full_df["월"] = self.full_df["접수일"].dt.to_period("M")
-        months = sorted(self.full_df["월"].astype(str).unique())
-        self.month_combo.clear()
-        self.month_combo.addItems(months)
-        self.month_combo.setCurrentIndex(len(months) - 1)  # 최신 월 선택
+        if df is None or df.empty:
+            return
+
+        self.full_df = combo_fillter(
+            df.copy(),
+            self.year_combo,
+            self.month_combo,
+            day_combo=self.day_combo,  # 생략 가능
+            on_change_callback=lambda *_: self.load_data()
+        )
         self.load_data()
 
+
+
+    def export_pdf(self):
+        try:
+            if self.table.rowCount() == 0:
+                print("❌ 출력할 데이터가 없습니다.")
+                return
+
+            save_path, _ = QFileDialog.getSaveFileName(self, "PDF 저장", "", "PDF Files (*.pdf)")
+            if not save_path:
+                return
+
+            # Replace the existing PDF export logic with the new call including orientation and font_size
+            selected_month = self.month_combo.currentText()
+            selected_ym = f"{selected_month}"
+            title = f"{selected_ym} 가맹점 종합리포트"
+            export_table_to_pdf(self.table, save_path, title, orientation="landscape", font_size=12)
+
+            print(f"✅ PDF 저장 완료: {save_path}")
+        except Exception as e:
+            print(f"❌ PDF 저장 중 오류 발생: {e}")
+
     def load_data(self):
+        print("📌 load_data() 호출됨")  # 첫 줄에 넣어보세요
         if self.full_df is None:
             return
 
-        selected_month = self.month_combo.currentText()
-        if not selected_month:
+        year = self.year_combo.currentText()
+        month = self.month_combo.currentText()
+        if not year or not month:
             return
 
-        df = self.full_df[self.full_df["월"].astype(str) == selected_month].copy()
+        selected_year = int(year)
+        selected_month = int(month)
+
+        self.label.setText(f"{selected_year}년 {selected_month}월 가맹점 종합 리포트")
+
+        df = self.full_df[
+            (self.full_df["접수년"] == selected_year) &
+            (self.full_df["월"] == selected_month)
+        ].copy()
 
         # 날짜 전처리 및 필터링
         df["접수일"] = pd.to_datetime(df["접수일"], errors="coerce")
@@ -197,22 +216,3 @@ class MonthlyStoreReportView(QWidget):
                 else:
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.table.setItem(row_idx, col_idx, item)
-
-    def export_pdf(self):
-        try:
-            if self.table.rowCount() == 0:
-                print("❌ 출력할 데이터가 없습니다.")
-                return
-
-            save_path, _ = QFileDialog.getSaveFileName(self, "PDF 저장", "", "PDF Files (*.pdf)")
-            if not save_path:
-                return
-
-            # Replace the existing PDF export logic with the new call including orientation and font_size
-            selected_month = self.month_combo.currentText()
-            title = f"{selected_month} 가맹점 종합리포트"
-            export_table_to_pdf(self.table, save_path, title, orientation="landscape", font_size=12)
-
-            print(f"✅ PDF 저장 완료: {save_path}")
-        except Exception as e:
-            print(f"❌ PDF 저장 중 오류 발생: {e}")

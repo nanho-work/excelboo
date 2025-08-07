@@ -1,25 +1,41 @@
 QComboBox {
     background-color: white;
     border: 1px solid #ccc;
-    padding: 5px;
+    border-radius: 6px;
+    padding: 6px 30px 6px 10px;
     font-size: 14px;
+    color: #333;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
+
 QComboBox:hover {
-    background-color: #e8f5ff;
+    background-color: #f0faff;
+    border: 1px solid #3399ff;
 }
+
+QComboBox:focus {
+    border: 1px solid #3399ff;
+    outline: none;
+}
+
 QComboBox::drop-down {
     subcontrol-origin: padding;
     subcontrol-position: top right;
-    width: 20px;
+    width: 24px;
     border-left: 1px solid #ccc;
 }
+
 QComboBox::down-arrow {
-    image: url(down_arrow_icon.png); /* 아이콘 경로 지정 필요 */
-    width: 12px;
-    height: 12px;
+    image: url(./assets/down_arrow_icon.png); /* 최신 아이콘으로 대체 가능 */
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
 }
+
 QComboBox QAbstractItemView {
     border: 1px solid #ccc;
-    selection-background-color: #e0f2fe;
+    selection-background-color: #d0ecff;
     selection-color: #000;
+    border-radius: 4px;
+    background-color: white;
 }
